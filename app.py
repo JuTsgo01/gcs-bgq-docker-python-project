@@ -11,9 +11,10 @@ from google.oauth2 import service_account
 
 load_dotenv()
 
-credentials_base64 = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
-credentials_json = base64.b64decode(credentials_base64).decode('utf-8')
-credentials = json.loads(credentials_json)
+credentials_json = base64.b64decode(os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')).decode('utf-8')
+credentials_info = json.loads(credentials_json)
+
+CREDENCIALS = service_account.Credentials.from_service_account_info(credentials_info)
 
 logging.basicConfig(filename='app.log',
                     level=logging.INFO,
@@ -84,11 +85,12 @@ class InsertData:
     
     def __init__(self):
         self.BUCKET = os.getenv('BUCKET')
+        self.CREDENTIAL = CREDENCIALS
         
     def insert_data(self, dataframe):
         
         hoje = datetime.date.today().strftime('%Y-%m-%d')
-        client = storage.Client(credentials=service_account.Credentials.from_service_account_info(credentials))
+        client = storage.Client(credentials=self.CREDENTIAL)
         bucket = client.bucket(self.BUCKET)
         
         nome_blob = f'data-voos-{hoje}.csv'
