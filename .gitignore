@@ -3,3 +3,4 @@ venv
 .env
 **/__pycache__
 app.log
+deploy-cloud-run.txt
