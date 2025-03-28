@@ -8,6 +8,7 @@ import datetime
 from dotenv import load_dotenv
 from google.cloud import storage
 from google.oauth2 import service_account
+from flask import Flask, jsonify
 
 load_dotenv()
 
@@ -15,6 +16,8 @@ credentials_json = base64.b64decode(os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JS
 credentials_info = json.loads(credentials_json)
 
 CREDENCIALS = service_account.Credentials.from_service_account_info(credentials_info)
+
+app = Flask(__name__)
 
 logging.basicConfig(filename='app.log',
                     level=logging.INFO,
@@ -100,12 +103,27 @@ class InsertData:
         bucket.blob(nome_blob).upload_from_string(file_content, 'text/csv')
         
         logging.info(f'Arqurivo: {nome_blob} inserido com sucesso no bucket {self.BUCKET}')
+   
+   
+@app.route('/')
+def run_task():
+    logging.info("Iniciando a função run_task")
+    try:
+        get_api = GetApi()
+        insercao_de_dados = InsertData()
+        insercao_de_dados.insert_data(get_api.create_csv_file())
+        
+        logging.info("Dados inseridos com sucesso")
+
+        return jsonify({'Status': 'Sucesso', 'Mensagem': 'Dados inseridos com sucesso'}), 200
+        
+    except Exception as e:
+        logging.error(f'Erro {e}')
+        return jsonify({'Status': 'Erro', 'Mensagem': 'Dados não foram inseridos com sucesso'}), 500
         
 if __name__ == '__main__':
-    
-    get_api = GetApi()
-    insercao_de_dados = InsertData()
-    insercao_de_dados.insert_data(get_api.create_csv_file())
+    port = int(os.getenv('PORT', 8080))
+    app.run(host="0.0.0.0", port=port)
         
         
     
