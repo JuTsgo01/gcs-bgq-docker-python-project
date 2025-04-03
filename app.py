@@ -76,8 +76,15 @@ class GetApi:
                           'arrival.airport', 'arrival.iata', 'arrival.icao', 'arrival.scheduled',
                           'arrival.actual', 'airline.name', 'aircraft.registration', 'aircraft.iata',
                           'aircraft.icao', 'aircraft.icao24']
-  
-            df = df[[col for col in colunas_esperadas if col in df.columns]]
+
+            for col in colunas_esperadas:
+                if col not in df.columns:
+                    df[col] = None
+        
+            #erro em produção me obrigou retornar pelo menos as colunas nulas
+            #gcs não aceita vir com menos ou mais que colunas programada na tabela externa
+        
+            df = df[colunas_esperadas]
             
             if df.empty:
                 logging.warning('Erro: Colunas esperadas não estão presentes no df ou o df está vazio.')
@@ -87,7 +94,7 @@ class GetApi:
             return df
 
         except Exception as e:
-            logging.error(f'Erro no tratamento do Dataframe na função "__createPandasDf" linha 48: {e}')
+            logging.error(f'Erro no tratamento do Dataframe na função "create_csv_file": {e}')
             raise
     
 
