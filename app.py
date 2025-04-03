@@ -70,14 +70,21 @@ class GetApi:
             raise ValueError('Erro: "return_fetch_api" retornou None ou vazio')
 
         try:
-            data_json_normalized = pd.json_normalize(data)
+            df = pd.json_normalize(data)
             
-            if data_json_normalized.empty:
+            colunas_esperadas = ['flight_date', 'departure.airport', 'departure.scheduled', 'departure.actual',
+                          'arrival.airport', 'arrival.iata', 'arrival.icao', 'arrival.scheduled',
+                          'arrival.actual', 'airline.name', 'aircraft.registration', 'aircraft.iata',
+                          'aircraft.icao', 'aircraft.icao24']
+  
+            df = df[[col for col in colunas_esperadas if col in df.columns]]
+            
+            if df.empty:
                 logging.warning('Erro: Colunas esperadas não estão presentes no df ou o df está vazio.')
                 return ValueError('Erro Dataframe Vazio')
             
-            logging.info(f'Dados rescebidos: {data_json_normalized}')
-            return data_json_normalized
+            logging.info(f'Dados rescebidos: {df}')
+            return df
 
         except Exception as e:
             logging.error(f'Erro no tratamento do Dataframe na função "__createPandasDf" linha 48: {e}')
